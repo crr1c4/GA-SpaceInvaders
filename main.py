@@ -1,5 +1,4 @@
 # TODO: PARA EL ALGORITMO GENETICO HABRA QUE REINICIAR EL JUEGO, ES DECIR SOLO TENDRA UNA VIDA
-# TODO: CAMBIAR LA VELOCIDAD DE LOS LASERS
 import pygame
 import sys
 
@@ -23,10 +22,15 @@ highscore_text_surface = font.render("HIGH-SCORE", False, YELLOW)
 SCREEN_WIDTH = 750
 SCREEN_HEIGHT = 700
 
+# Espacio para la información del algoritmo genetico.
+GA_SCREEN_WIDTH = 500
+
 # Espacio para colocar la UI
 OFFSET = 50
 
-screen = pygame.display.set_mode((SCREEN_WIDTH + OFFSET, SCREEN_HEIGHT + 2 * OFFSET))
+screen = pygame.display.set_mode(
+    (SCREEN_WIDTH + OFFSET + GA_SCREEN_WIDTH, SCREEN_HEIGHT + 2 * OFFSET)
+)
 pygame.display.set_caption("Proyecto Algoritmos Genéticos - Invasores del Espacio.")
 
 # Sirve para controlar el tiempo de actualización del renderizado del juego.
@@ -34,7 +38,7 @@ clock = pygame.time.Clock()
 
 # Evento para el laser de los aliens, le dice a pygame el tiempo entre cada disparo (300 ms).
 SHOOT_LASER = pygame.USEREVENT
-pygame.time.set_timer(SHOOT_LASER, 300)
+pygame.time.set_timer(SHOOT_LASER, 1000)
 
 # Instancia del nucleo del juego.
 game = Game(SCREEN_WIDTH, SCREEN_HEIGHT, OFFSET)
