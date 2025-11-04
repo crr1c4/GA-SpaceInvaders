@@ -10,6 +10,11 @@ pygame.init()
 GREY = (29, 29, 27)
 YELLOW = (243, 216, 63)
 
+# Fuente de la UI
+font = pygame.font.Font("game/assets/monogram.ttf", 40)
+level_surface = font.render("LEVEL 01", False, YELLOW)
+game_over_surface = font.render("GAME OVER", False, YELLOW)
+
 # Dimensiones y configuracion de la ventana de la ventana.
 SCREEN_WIDTH = 750
 SCREEN_HEIGHT = 700
@@ -65,6 +70,14 @@ while True:  # Loop principal del juego.
     # La segunda es el punto final.
     # 3 es el grosor de la linea.
     pygame.draw.line(screen, YELLOW, (20, 730), (775, 730), 3)
+
+    # TODO: CAMBIAR ESTO A LA GENERACION DEL AG
+    # Muestra el texto en la pantalla (UI)
+    if game.run:
+        screen.blit(level_surface, (570, 740, 50, 50))
+    else:
+        screen.blit(game_over_surface, (570, 740, 50, 50))
+
     game.spaceship_group.draw(screen)
     game.spaceship_group.sprite.laser_group.draw(screen)
     game.aliens_group.draw(screen)
