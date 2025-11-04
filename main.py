@@ -2,6 +2,7 @@ import pygame
 import sys
 
 from game.spaceship import Spaceship
+from game.laser import Laser
 
 _ = pygame.init()
 
@@ -25,7 +26,6 @@ spaceship = Spaceship(SCREEN_WIDTH, SCREEN_HEIGHT)
 spaceship_group = pygame.sprite.GroupSingle()
 spaceship_group.add(spaceship)
 
-
 while True:  # Loop principal del juego.
     for event in pygame.event.get():  # Manejo de eventos.
         if event.type == pygame.QUIT:
@@ -38,6 +38,8 @@ while True:  # Loop principal del juego.
     # Dibujos y coloreados.
     _ = screen.fill(GREY)
     _ = spaceship_group.draw(screen)
+    # Actualiza el grupo de laser dentro de spaceship.
+    spaceship_group.sprite.laser_group.draw(screen)
 
     pygame.display.update()  # Actualiza las entidades del juego (graficos).
     _ = clock.tick(60)  # El juego ira a 60 fps.
