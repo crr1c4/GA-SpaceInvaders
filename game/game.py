@@ -74,3 +74,30 @@ class Game:
             # Se crea el laser basado en los parametros del alien elegido.
             laser_sprite = Laser(random_alien.rect.center, -6, self.screen_height)
             self.alien_lasers_group.add(laser_sprite)
+
+    # Verifica las colisiones.
+    def check_for_collisions(self):
+        # Primero verifica si alguno de los lasers del spaceship colisiona con un alien.
+        if self.spaceship_group.sprite.laser_group:
+            laser_sprite = self.spaceship_group.sprite.laser_group.sprite
+            # El tercer argumento le indica a pygame si debe destruir el elemento con el que hizo colisión.
+            # Si colisiono con un alien, se borra el laser
+            if pygame.sprite.spritecollide(laser_sprite, self.aliens_group, True):
+                laser_sprite.kill()
+
+        # Verificación por los disparos de los aliens.
+        if self.alien_lasers_group:
+            for laser_sprite in self.alien_lasers_group:
+                # TODO: Como se va a implementar el algoritmo genetico, se deba checar si se tendran n cantidad de vidas o se va a reiniciar.
+                # Por lo pronto se dejará lo primero.
+                if pygame.sprite.spritecollide(
+                    laser_sprite, self.spaceship_group, False
+                ):
+                    laser_sprite.kill()
+                    print("Spaceship hit")
+
+        # Verifica si los aliens alcanzarón la nave
+        if self.aliens_group:
+            for alien in self.aliens_group:
+                if pygame.sprite.spritecollide(alien, self.spaceship_group, False):
+                    print("Spaceship hit")

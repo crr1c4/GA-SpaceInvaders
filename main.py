@@ -38,6 +38,7 @@ while True:  # Loop principal del juego.
     game.spaceship_group.update()
     game.move_aliens()
     game.alien_lasers_group.update()
+    game.check_for_collisions()
 
     # Dibuja las entidades.
     screen.fill(GREY)
