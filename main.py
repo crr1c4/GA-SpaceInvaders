@@ -16,6 +16,7 @@ level_surface = font.render("LEVEL 01", False, YELLOW)
 game_over_surface = font.render("GAME OVER", False, YELLOW)
 # Puntuación
 score_text_surface = font.render("SCORE", False, YELLOW)
+highscore_text_surface = font.render("HIGH-SCORE", False, YELLOW)
 
 # Dimensiones y configuracion de la ventana de la ventana.
 SCREEN_WIDTH = 750
@@ -85,6 +86,10 @@ while True:  # Loop principal del juego.
     formatted_score = str(game.score).zfill(5)
     score_surface = font.render(formatted_score, False, YELLOW)
     screen.blit(score_surface, (50, 40, 50, 50))
+    screen.blit(highscore_text_surface, (600, 15, 50, 50))
+    formatted_highscore = str(game.highscore).zfill(5)
+    highscore_surface = font.render(formatted_highscore, False, YELLOW)
+    screen.blit(highscore_surface, (675, 40, 50, 50))
 
     game.spaceship_group.draw(screen)
     game.spaceship_group.sprite.laser_group.draw(screen)

@@ -26,6 +26,7 @@ class Game:
         self.lives = 1
         self.run = True
         self.score = 0
+        self.highscore = 0
 
     # Se usarán 5 renglones x 11 columnas para los aliens.
     def create_aliens(self):
@@ -96,6 +97,7 @@ class Game:
             if aliens_hit:
                 for alien in aliens_hit:
                     self.score += alien.type * 100
+                    self.check_for_highscore()
                     laser_sprite.kill()
 
         # Verificación por los disparos de los aliens.
@@ -134,3 +136,8 @@ class Game:
         self.alien_lasers_group.empty()
         self.create_aliens()
         self.score = 0
+
+    # Checa la puntuación mas alta.
+    def check_for_highscore(self):
+        if self.score > self.highscore:
+            self.highscore = self.score
