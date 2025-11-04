@@ -13,7 +13,7 @@ SCREEN_WIDTH = 750
 SCREEN_HEIGHT = 700
 
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Proyecto Algoritmos Genéticos - Space Invaders")
+pygame.display.set_caption("Proyecto Algoritmos Genéticos - Invasores del Espacio.")
 
 # Sirve para controlar el tiempo de actualización del renderizado del juego.
 clock = pygame.time.Clock()
