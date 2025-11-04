@@ -18,6 +18,10 @@ pygame.display.set_caption("Proyecto Algoritmos Genéticos - Space Invaders")
 # Sirve para controlar el tiempo de actualización del renderizado del juego.
 clock = pygame.time.Clock()
 
+# Evento para el laser de los aliens, le dice a pygame el tiempo entre cada disparo (300 ms).
+SHOOT_LASER = pygame.USEREVENT
+pygame.time.set_timer(SHOOT_LASER, 300)
+
 # Instancia del nucleo del juego.
 game = Game(SCREEN_WIDTH, SCREEN_HEIGHT)
 
@@ -26,14 +30,21 @@ while True:  # Loop principal del juego.
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        # Checa el evento del disparo de alien.
+        if event.type == SHOOT_LASER:
+            game.alien_shoot_laser()
 
     # Actualizar las entidades del juego.
     game.spaceship_group.update()
+    game.move_aliens()
+    game.alien_lasers_group.update()
 
-    # Dibujos y coloreados.
+    # Dibuja las entidades.
     screen.fill(GREY)
     game.spaceship_group.draw(screen)
     game.spaceship_group.sprite.laser_group.draw(screen)
+    game.aliens_group.draw(screen)
+    game.alien_lasers_group.draw(screen)
 
     pygame.display.update()  # Actualiza las entidades del juego (graficos).
     _ = clock.tick(60)  # El juego ira a 60 fps.

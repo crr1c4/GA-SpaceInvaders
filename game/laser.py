@@ -1,4 +1,4 @@
-# Archivo que contiene la lógica dle misil o laser que el spaceship va a lanzar.
+# Archivo que contiene la lógica de misil o laser que el spaceship va a lanzar.
 import pygame
 
 
