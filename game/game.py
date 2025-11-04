@@ -19,6 +19,9 @@ class Game:
         self.create_aliens()
         self.aliens_direction = 1
         self.alien_lasers_group = pygame.sprite.Group()
+        # El algoritmo genetico reiniciara el juego, por lo que no es necesario tener mas de una vida.
+        self.lives = 1
+        self.run = True
 
     # Se usarán 5 renglones x 11 columnas para los aliens.
     def create_aliens(self):
@@ -94,10 +97,29 @@ class Game:
                     laser_sprite, self.spaceship_group, False
                 ):
                     laser_sprite.kill()
-                    print("Spaceship hit")
+                    # Checa las vidas del spaceship.
+                    self.lives -= 1
+
+                    if self.lives == 0:
+                        self.game_over()
 
         # Verifica si los aliens alcanzarón la nave
         if self.aliens_group:
             for alien in self.aliens_group:
                 if pygame.sprite.spritecollide(alien, self.spaceship_group, False):
-                    print("Spaceship hit")
+                    # TODO: Hay que checar esto, para algoritmo genetico.
+                    self.game_over()
+
+    # Maneja el evento de game over.
+    def game_over(self):
+        self.run = False
+        print("Game Over")
+
+    # Reinicia el juego
+    def reset(self):
+        self.run = True
+        self.lives = 1
+        self.spaceship_group.sprite.reset()
+        self.aliens_group.empty()
+        self.alien_lasers_group.empty()
+        self.create_aliens()

@@ -1,3 +1,4 @@
+# TODO: PARA EL ALGORITMO GENETICO HABRA QUE REINICIAR EL JUEGO, ES DECIR SOLO TENDRA UNA VIDA
 import pygame
 import sys
 
@@ -30,15 +31,22 @@ while True:  # Loop principal del juego.
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        # Checa el evento del disparo de alien.
-        if event.type == SHOOT_LASER:
+        # Checa el evento del disparo de alien. Tambien debe checar que no haya perdido.
+        if event.type == SHOOT_LASER and game.run:
             game.alien_shoot_laser()
 
+        # TODO: CAMBIAR ESTO AL IMPLEMENTAR EL ALGORITMO GENETICO.
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE] and game.run == False:
+            game.reset()
+
     # Actualizar las entidades del juego.
-    game.spaceship_group.update()
-    game.move_aliens()
-    game.alien_lasers_group.update()
-    game.check_for_collisions()
+    # Checa si el juego termino:
+    if game.run:
+        game.spaceship_group.update()
+        game.move_aliens()
+        game.alien_lasers_group.update()
+        game.check_for_collisions()
 
     # Dibuja las entidades.
     screen.fill(GREY)

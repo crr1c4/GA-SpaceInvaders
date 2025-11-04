@@ -54,3 +54,11 @@ class Spaceship(pygame.sprite.Sprite):
         self.get_user_input()
         self.constrain_movement()
         self.laser_group.update()
+
+    # Resetea la posición del spaceship.
+    def reset(self):
+        self.rect = self.image.get_rect(
+            midbottom=(self.screen_width / 2, self.screen_height)
+        )
+        # Elimina el laser del spaceship
+        self.laser_group.empty()
