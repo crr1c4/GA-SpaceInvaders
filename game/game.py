@@ -25,6 +25,7 @@ class Game:
         # El algoritmo genetico reiniciara el juego, por lo que no es necesario tener mas de una vida.
         self.lives = 1
         self.run = True
+        self.score = 0
 
     # Se usarán 5 renglones x 11 columnas para los aliens.
     def create_aliens(self):
@@ -88,8 +89,14 @@ class Game:
             laser_sprite = self.spaceship_group.sprite.laser_group.sprite
             # El tercer argumento le indica a pygame si debe destruir el elemento con el que hizo colisión.
             # Si colisiono con un alien, se borra el laser
-            if pygame.sprite.spritecollide(laser_sprite, self.aliens_group, True):
-                laser_sprite.kill()
+            aliens_hit = pygame.sprite.spritecollide(
+                laser_sprite, self.aliens_group, True
+            )
+
+            if aliens_hit:
+                for alien in aliens_hit:
+                    self.score += alien.type * 100
+                    laser_sprite.kill()
 
         # Verificación por los disparos de los aliens.
         if self.alien_lasers_group:
@@ -126,3 +133,4 @@ class Game:
         self.aliens_group.empty()
         self.alien_lasers_group.empty()
         self.create_aliens()
+        self.score = 0

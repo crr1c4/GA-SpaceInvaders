@@ -14,6 +14,8 @@ YELLOW = (243, 216, 63)
 font = pygame.font.Font("game/assets/monogram.ttf", 40)
 level_surface = font.render("LEVEL 01", False, YELLOW)
 game_over_surface = font.render("GAME OVER", False, YELLOW)
+# Puntuación
+score_text_surface = font.render("SCORE", False, YELLOW)
 
 # Dimensiones y configuracion de la ventana de la ventana.
 SCREEN_WIDTH = 750
@@ -77,6 +79,12 @@ while True:  # Loop principal del juego.
         screen.blit(level_surface, (570, 740, 50, 50))
     else:
         screen.blit(game_over_surface, (570, 740, 50, 50))
+
+    # Sección de la UI que muestra la puntuación
+    screen.blit(score_text_surface, (50, 15, 50, 50))
+    formatted_score = str(game.score).zfill(5)
+    score_surface = font.render(formatted_score, False, YELLOW)
+    screen.blit(score_surface, (50, 40, 50, 50))
 
     game.spaceship_group.draw(screen)
     game.spaceship_group.sprite.laser_group.draw(screen)
