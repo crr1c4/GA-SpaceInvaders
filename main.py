@@ -8,12 +8,16 @@ pygame.init()
 
 # Colores
 GREY = (29, 29, 27)
+YELLOW = (243, 216, 63)
 
 # Dimensiones y configuracion de la ventana de la ventana.
 SCREEN_WIDTH = 750
 SCREEN_HEIGHT = 700
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+# Espacio para colocar la UI
+OFFSET = 50
+
+screen = pygame.display.set_mode((SCREEN_WIDTH + OFFSET, SCREEN_HEIGHT + 2 * OFFSET))
 pygame.display.set_caption("Proyecto Algoritmos Genéticos - Invasores del Espacio.")
 
 # Sirve para controlar el tiempo de actualización del renderizado del juego.
@@ -24,7 +28,7 @@ SHOOT_LASER = pygame.USEREVENT
 pygame.time.set_timer(SHOOT_LASER, 300)
 
 # Instancia del nucleo del juego.
-game = Game(SCREEN_WIDTH, SCREEN_HEIGHT)
+game = Game(SCREEN_WIDTH, SCREEN_HEIGHT, OFFSET)
 
 while True:  # Loop principal del juego.
     for event in pygame.event.get():  # Manejo de eventos.
@@ -50,6 +54,17 @@ while True:  # Loop principal del juego.
 
     # Dibuja las entidades.
     screen.fill(GREY)
+    # Los parametros no conocidos para el borde son:
+    # La tupla es la posición del rect
+    # 2 es la anchura del borde
+    # 0 es para evitar que se rellene
+    # Los 60s son los corner radius, para que se vea redondeado.
+    pygame.draw.rect(screen, YELLOW, (10, 10, 780, 780), 2, 0, 60, 60, 60, 60)
+    # Linea para separar la UI:
+    # La primera tupla es el punto inicial.
+    # La segunda es el punto final.
+    # 3 es el grosor de la linea.
+    pygame.draw.line(screen, YELLOW, (20, 730), (775, 730), 3)
     game.spaceship_group.draw(screen)
     game.spaceship_group.sprite.laser_group.draw(screen)
     game.aliens_group.draw(screen)

@@ -8,12 +8,15 @@ from .alien import Alien
 
 
 class Game:
-    def __init__(self, screen_width: int, screen_height: int) -> None:
+    def __init__(self, screen_width: int, screen_height: int, offset: int):
         self.screen_width = screen_width
         self.screen_height = screen_height
+        self.offset = offset
         # Los grupos sirven para agrupar las entidades y poder renderizarlas mas facil.
         self.spaceship_group = pygame.sprite.GroupSingle()
-        self.spaceship_group.add(Spaceship(self.screen_width, self.screen_height))
+        self.spaceship_group.add(
+            Spaceship(self.screen_width, self.screen_height, self.offset)
+        )
         # Grupo para los aliens.
         self.aliens_group = pygame.sprite.Group()
         self.create_aliens()
@@ -39,7 +42,7 @@ class Game:
                     alien_type = 2
                 else:
                     alien_type = 1
-                alien = Alien(x, y, alien_type)
+                alien = Alien(x + self.offset // 2, y, alien_type)
                 self.aliens_group.add(alien)
 
     def move_aliens(self):
@@ -52,11 +55,11 @@ class Game:
         # Se iteran por cada uno y se checa si ya paso el limite de la pantalla.
         for alien in alien_sprites:
             # Limite derecho
-            if alien.rect.right >= self.screen_width:
+            if alien.rect.right >= self.screen_width + self.offset / 2:
                 self.aliens_direction = -1
                 self.move_down_alien(2)
             # Limite izquierdo
-            elif alien.rect.left <= 0:
+            elif alien.rect.left <= self.offset / 2:
                 self.aliens_direction = 1
                 self.move_down_alien(2)
 

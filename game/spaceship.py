@@ -6,16 +6,17 @@ from .laser import Laser
 
 # Se usa las sprite class de pygame para que sea mas facil de manejar.
 class Spaceship(pygame.sprite.Sprite):
-    def __init__(self, screen_width: int, screen_height: int):
+    def __init__(self, screen_width: int, screen_height: int, offest: int):
         super().__init__()
         # Dimensiones de la pantalla
+        self.offset = offest
         self.screen_width: int = screen_width
         self.screen_height: int = screen_height
         # pyagme usa la ruta raíz del proyecto.
         self.image = pygame.image.load("game/assets/spaceship.png")
         # Posiciona la spaceship en la parte inferior media; en ese punto se posiciona la parte inferior media de la imagen.
         self.rect = self.image.get_rect(
-            midbottom=(self.screen_width / 2, self.screen_height)
+            midbottom=((self.screen_width + self.offset) / 2, self.screen_height)
         )
         self.speed = 6
 
@@ -46,8 +47,8 @@ class Spaceship(pygame.sprite.Sprite):
             self.rect.right = self.screen_width
 
         # Limite izquierdo.
-        if self.rect.left < 0:
-            self.rect.left = 0
+        if self.rect.left < self.offset:
+            self.rect.left = self.offset
 
     # Actualiza el renderizado de la spaceship.
     def update(self):
@@ -58,7 +59,7 @@ class Spaceship(pygame.sprite.Sprite):
     # Resetea la posición del spaceship.
     def reset(self):
         self.rect = self.image.get_rect(
-            midbottom=(self.screen_width / 2, self.screen_height)
+            midbottom=((self.screen_width + self.offset) / 2, self.screen_height)
         )
         # Elimina el laser del spaceship
         self.laser_group.empty()
