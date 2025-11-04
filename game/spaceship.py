@@ -19,6 +19,7 @@ class Spaceship(pygame.sprite.Sprite):
             midbottom=((self.screen_width + self.offset) / 2, self.screen_height)
         )
         self.speed = 6
+        self.laser_sound = pygame.mixer.Sound("game/assets/laser.ogg")
 
         # Lasers: como solo puedo disparar uno a la vez, este sera un GroupSingle
         self.laser_group = pygame.sprite.GroupSingle()
@@ -39,6 +40,7 @@ class Spaceship(pygame.sprite.Sprite):
         if keys[pygame.K_SPACE] and not self.laser_group:
             laser = Laser(self.rect.center, 5, self.screen_height)
             self.laser_group.add(laser)
+            self.laser_sound.play()
 
     # Checa que la spaceschip no se salga de los limites de la pantalla.
     def constrain_movement(self):

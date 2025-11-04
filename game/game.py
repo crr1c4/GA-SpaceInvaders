@@ -27,6 +27,10 @@ class Game:
         self.run = True
         self.score = 0
         self.highscore = 0
+        # Musica de fondo
+        # pygame.mixer.music.load("game/assets/music.ogg")
+        # pygame.mixer.music.play(-1)  # -1 indica el loop
+        self.explosion_sound = pygame.mixer.Sound("game/assets/explosion.ogg")
 
     # Se usarán 5 renglones x 11 columnas para los aliens.
     def create_aliens(self):
@@ -95,6 +99,7 @@ class Game:
             )
 
             if aliens_hit:
+                self.explosion_sound.play()
                 for alien in aliens_hit:
                     self.score += alien.type * 100
                     self.check_for_highscore()
@@ -141,3 +146,7 @@ class Game:
     def check_for_highscore(self):
         if self.score > self.highscore:
             self.highscore = self.score
+
+            # Por si se quiere guardar la highscore de manera persistente.
+            # with open("highscore.txt", "w") as file:
+            #     file.write(str(self.highscore))
