@@ -15,7 +15,7 @@ class Game:
         # Los grupos sirven para agrupar las entidades y poder renderizarlas mas facil.
         self.spaceship_group = pygame.sprite.GroupSingle()
         self.spaceship_group.add(
-            Spaceship(self.screen_width, self.screen_height, self.offset)
+            Spaceship(self.screen_width, self.screen_height, 24, 50)
         )
         # Grupo para los aliens.
         self.aliens_group = pygame.sprite.Group()
