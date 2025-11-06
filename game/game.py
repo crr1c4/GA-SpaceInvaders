@@ -77,7 +77,10 @@ class Game:
         if self.alien and not self.alien_laser:
             alien = self.alien.sprite
             laser_sprite = Laser(
-                alien.rect.center, -self.cell_size, self.get_screen_height()
+                alien.rect.center,
+                -self.cell_size,
+                self.get_screen_height(),
+                (123, 124, 182),
             )
             self.alien_laser.add(laser_sprite)
 
