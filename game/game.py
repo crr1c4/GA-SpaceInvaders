@@ -1,5 +1,4 @@
 # La clase Game sirve para contener toda la logica del juego.
-from numpy.ma import column_stack
 import pygame
 import random
 
@@ -30,7 +29,7 @@ class Game:
         # Grupo para los aliens.
         self.alien = pygame.sprite.GroupSingle()
         self.create_alien()
-        self.alien_direction = 1
+        self.alien_direction = random.choice([-1, 1])
         self.alien_laser = pygame.sprite.GroupSingle()
         self.run = True
         self.explosion_sound = pygame.mixer.Sound("game/assets/explosion.ogg")
@@ -38,8 +37,8 @@ class Game:
     # Se usarán 5 renglones x 11 columnas para los aliens.
     def create_alien(self):
         # Debe aparecer con la segundo renglón (ranglon 1), y la columna de en medio (10).
-        x = self.get_screen_width() // 2 + self.cell_size // 2
-        y = 1 * self.cell_size + self.cell_size // 2
+        x = random.randint(0, self.columns - 1) * self.cell_size + self.cell_size // 2
+        y = self.cell_size + self.cell_size // 2
 
         alien = Alien(x, y, 1)
         self.alien.add(alien)

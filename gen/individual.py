@@ -19,3 +19,8 @@ class Individual:
         # fitness es la adaptación del juego. Se va a cambiar dependiendo de la puntuacion o de lo cerca que llegan los misiles del defenser al invasor.
         # PREGUNTARLE A LA MAESTRA SI SE PUEDE DEJAR COMO LA PUNTUACION.
         self.fitness: int = -1
+
+    # Este método permite crear un individuo pasandole un cromosoma, esto es util a la hora de crear hijos
+    def set_chromosome(self, chromosome: list[int]):
+        self.chromosome = chromosome
+        return self

@@ -3,7 +3,27 @@ import pygame
 import sys
 
 from game.game import Game
+from gen.population import Population
 
+
+############### ALGORITMO GENÉTICO ***************
+# FASES DEL ALGORITMO GENÉTICO.
+# 1. Calcular la adaptación
+# 2. Seleccionar a los padres
+# 3. Crossover y mutación
+# 4. Regresa al paso 1
+
+CHROMOSOME_SIZE = 150
+POPULATION_SIZE = 50
+
+# Población inicial (generación 0)
+population = Population(POPULATION_SIZE, CHROMOSOME_SIZE)
+
+# for individual in population.individuals:
+#     print(individual.chromosome)
+
+
+############### JUEGO ***************
 _ = pygame.init()
 
 # Colores
