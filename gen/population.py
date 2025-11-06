@@ -20,10 +20,6 @@ class Population:
         ]
 
     def select_parents_by_tournament(self, tournament_size=3) -> list[Individual]:
-        """
-        Selecciona individuos para la siguiente generación usando selección por torneo.
-        Funciona para minimización (menor fitness es mejor).
-        """
         selected_parents = []
         for _ in range(self.size):
             # Elige N individuos al azar para el torneo
@@ -34,6 +30,22 @@ class Population:
             selected_parents.append(winner)
         return selected_parents
 
+    def select_parents_by_elitism(self, elite_percentage=0.2) -> list[Individual]:
+        # Ordena a todos los individuos por su fitness, de mejor a peor
+        sorted_individuals = sorted(self.individuals, key=lambda ind: ind.fitness)
+
+        # Calcula cuántos individuos forman la élite
+        elite_count = int(self.size * elite_percentage)
+
+        # Asegura que al menos haya 2 padres para poder cruzar
+        elite_count = max(2, elite_count)
+
+        # El pool de padres serán ÚNICAMENTE los mejores individuos
+        parent_pool = sorted_individuals[:elite_count]
+
+        return parent_pool
+
+    # Se utiliza el punto sencilla, una parte del primer padre y otra del segundo padre.
     def crossover(
         self, parent1: Individual, parent2: Individual, rate=0.7
     ) -> tuple[list[int], list[int]]:

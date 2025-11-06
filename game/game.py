@@ -33,7 +33,7 @@ class Game:
         self.alien_laser = pygame.sprite.GroupSingle()
         self.run = True
         self.explosion_sound = pygame.mixer.Sound("game/assets/explosion.ogg")
-        self.cumulative_distance = 0
+        self.fitness = 0
 
     # Se usarán 5 renglones x 11 columnas para los aliens.
     def create_alien(self):
@@ -96,14 +96,17 @@ class Game:
             if alien_hit:
                 self.explosion_sound.play()
                 laser_sprite.kill()
+                # Termina el juego, solo hay un alien.
+                self.game_over()
 
         # Verificación por los disparos de los aliens.
         if self.alien_laser:
-            for laser_sprite in self.alien_laser:
-                # TODO: Como se va a implementar el algoritmo genetico, se deba checar si se tendran n cantidad de vidas o se va a reiniciar.
+            if self.alien_laser:
                 # Por lo pronto se dejará lo primero.
-                if pygame.sprite.spritecollide(laser_sprite, self.spaceship, False):
-                    laser_sprite.kill()
+                if pygame.sprite.spritecollide(
+                    self.alien_laser.sprite, self.spaceship, False
+                ):
+                    self.alien_laser.sprite.kill()
                     # Checa las vidas del spaceship.
                     # self.lives -= 1
 
@@ -129,7 +132,8 @@ class Game:
         self.alien.empty()
         self.alien_laser.empty()
         self.create_alien()
-        # self.score = 0
+        self.fitness = 0
+        self.alien_direction = random.choice([-1, 1])
 
     # Obtiene el ancho del tablero
     def get_screen_width(self):
@@ -141,21 +145,36 @@ class Game:
 
     # Función de adaptación: se puede definir como una medida de lo cerca que llegan los misiles del defensor al invasor.
     def calculate_fitness_step(self):
+        # ESTA PARTE CHECA QUE LA DISTANCIA DEL LASER AL ALIEN
         if self.spaceship.sprite.laser.sprite and self.alien.sprite:
             laser = self.spaceship.sprite.laser.sprite
             alien = self.alien.sprite
 
             # La adaptación es la suma del resultado de cada partida: la distancia del misil al invasor cada vez que se encuentren en la misma fila
             # Comprueba si están en la misma fila (misma coordenada Y)
-            # Usamos una tolerancia (ej: la mitad de la altura de la celda)
-            if abs(laser.rect.centerx - alien.rect.centerx) < (self.cell_size // 2):
-                # Calcula la distancia horizontal (X)
-                distance = abs(laser.rect.centerx - alien.rect.centerx)
+            if abs(laser.rect.centery - alien.rect.centery) < (self.cell_size // 2):
+                # Si coinciden significa que se debe sumar al fitness.
+                self.fitness += abs(laser.rect.centerx - alien.rect.centerx)
 
-                # "la suma del resultado de cada partida: la distancia..."
-                self.cumulative_distance += distance
+                # Esto simula que "la medición se ha tomado". NO ES NECESARIO SEGUIR CON LA EJECUCION DE LA ITERACION.
+                # laser.kill()
 
-                # IMPORTANTE: Para evitar sumar la distancia en múltiples frames
-                # mientras cruza la fila, matamos el láser después de medir.
-                # Esto simula que "la medición se ha tomado".
-                laser.kill()
+        # MIDE LA DISTANCIA DEL LASER ENEMIGO A LA SPACESHIP.
+        if self.alien_laser.sprite and self.spaceship.sprite:
+            laser_alien = self.alien_laser.sprite
+            spaceship = self.spaceship.sprite
+
+            # Distancia horizontal entre la nave y el láser enemigo
+            distance_to_danger = abs(laser_alien.rect.centerx - spaceship.rect.centerx)
+
+            # zona de peligro de dos celdas
+            DANGER_ZONE_RADIUS = self.cell_size * 2
+
+            if distance_to_danger < DANGER_ZONE_RADIUS:
+                # Si estamos en la zona de peligro, calculamos una penalización.
+                danger_penalty = DANGER_ZONE_RADIUS - distance_to_danger
+
+                # Le damos un "peso" a esta penalización.
+                # Estar en peligro es 2 veces peor que fallar por la misma distancia.
+                DANGER_WEIGHT = 2
+                self.fitness += danger_penalty * DANGER_WEIGHT

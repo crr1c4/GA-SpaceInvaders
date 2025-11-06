@@ -34,8 +34,8 @@ class Spaceship(pygame.sprite.Sprite):
     def move_left(self):
         self.rect.x -= self.speed
         # Limite izquierdo.
-        if self.rect.left < 0:
-            self.rect.left = self.offset
+        if self.rect.x < 0:
+            self.rect.x = 0
 
     # Mueve la spaceship hacia la derecha.
     def move_right(self):
@@ -49,22 +49,12 @@ class Spaceship(pygame.sprite.Sprite):
         if not self.laser:
             laser = Laser(self.rect.center, self.speed, self.screen_height)
             self.laser.add(laser)
-            self.laser_sound.play()
-
-    # Checa que la spaceschip no se salga de los limites de la pantalla.
-    def constrain_movement(self):
-        # Limite derecho.
-        if self.rect.right > self.screen_width:
-            self.rect.right = self.screen_width
-
-        # Limite izquierdo.
-        if self.rect.left < 0:
-            self.rect.left = self.offset
+            # self.laser_sound.play()
 
     # Actualiza el renderizado de la spaceship.
     def update(self):
         # self.get_user_input()
-        self.constrain_movement()
+        # self.constrain_movement()
         self.laser.update()
 
     # Resetea la posición del spaceship.

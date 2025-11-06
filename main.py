@@ -15,8 +15,8 @@ from gen.population import Population
 # 3. Crossover y mutación
 # 4. Regresa al paso 1
 
-CHROMOSOME_SIZE = 150
-POPULATION_SIZE = 50
+CHROMOSOME_SIZE = 100
+POPULATION_SIZE = 25
 GENERATIONS = 50
 
 # Población inicial (generación 0)
@@ -135,7 +135,7 @@ for generation in range(population.generations):
             _ = clock.tick(clock_speed)
 
         # Se guarda el fitness en el individuo
-        individual.fitness = game.cumulative_distance
+        individual.fitness = game.fitness
 
         # Si el alien sigue vivo, el fitness es mucho peor
         if game.alien.sprite:
@@ -176,6 +176,6 @@ for generation in range(population.generations):
     population.individuals = new_generation
     population.actual_generation += 1
 
-print("¡Algoritmo genético completado!")
+print("Algoritmo genético completado")
 pygame.quit()
 sys.exit()
