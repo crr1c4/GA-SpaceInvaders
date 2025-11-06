@@ -8,31 +8,23 @@ _ = pygame.init()
 
 # Colores
 GREY = (29, 29, 27)
-# LIGHT_GREY = (40, 40, 36)
-LIGHT_GREY = (255, 255, 255)
+LIGHT_GREY = (40, 40, 36)
+# LIGHT_GREY = (255, 255, 255)
 YELLOW = (243, 216, 63)
-
-# Fuente de la UI
-font = pygame.font.Font("game/assets/monogram.ttf", 40)
-level_surface = font.render("LEVEL 01", False, YELLOW)
-game_over_surface = font.render("GAME OVER", False, YELLOW)
-# Puntuación
-score_text_surface = font.render("SCORE", False, YELLOW)
-highscore_text_surface = font.render("HIGH-SCORE", False, YELLOW)
 
 # Cuadricula del GRID
 ROWS, COLUMNS = 20, 15
-CELL_WIDTH = 50
+CELL_SIZE = 50
 
 # Dimensiones y configuracion de la ventana de la ventana.
-SCREEN_WIDTH = ROWS * CELL_WIDTH
-SCREEN_HEIGHT = COLUMNS * CELL_WIDTH
+SCREEN_WIDTH = ROWS * CELL_SIZE
+SCREEN_HEIGHT = COLUMNS * CELL_SIZE
 
 # Espacio para la información del algoritmo genetico.
 GA_SCREEN_WIDTH = 500
 
 # Espacio para colocar la UI
-OFFSET = 50
+OFFSET = 0
 
 screen = pygame.display.set_mode(
     # (SCREEN_WIDTH + OFFSET + GA_SCREEN_WIDTH, SCREEN_HEIGHT + 2 * OFFSET),
@@ -44,80 +36,60 @@ pygame.display.set_caption("Proyecto Algoritmos Genéticos - Invasores del Espac
 
 # Función para dibujar la cuadricula
 def draw_grid():
-    for x in range(0, SCREEN_WIDTH, CELL_WIDTH):
-        for y in range(0, SCREEN_HEIGHT, CELL_WIDTH):
-            rect = pygame.Rect(x, y, CELL_WIDTH, CELL_WIDTH)
+    for x in range(0, SCREEN_WIDTH, CELL_SIZE):
+        for y in range(0, SCREEN_HEIGHT, CELL_SIZE):
+            rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
             _ = pygame.draw.rect(screen, LIGHT_GREY, rect, 1)
 
 
 # Sirve para controlar el tiempo de actualización del renderizado del juego.
+clock_speed = 5
 clock = pygame.time.Clock()
 
-# Evento para el laser de los aliens, le dice a pygame el tiempo entre cada disparo (300 ms).
-SHOOT_LASER = pygame.USEREVENT
-pygame.time.set_timer(SHOOT_LASER, 1000)
 
 # Instancia del nucleo del juego.
-game = Game(SCREEN_WIDTH, SCREEN_HEIGHT, OFFSET)
+# game = Game(SCREEN_WIDTH, SCREEN_HEIGHT, OFFSET, CELL_SIZE)
+game = Game(CELL_SIZE, ROWS, COLUMNS)
 
 while True:  # Loop principal del juego.
     for event in pygame.event.get():  # Manejo de eventos.
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
-        # Checa el evento del disparo de alien. Tambien debe checar que no haya perdido.
-        # if event.type == SHOOT_LASER and game.run:
-        #     game.alien_shoot_laser()
 
-        # # TODO: CAMBIAR ESTO AL IMPLEMENTAR EL ALGORITMO GENETICO.
-        # keys = pygame.key.get_pressed()
-        # if keys[pygame.K_SPACE] and game.run == False:
-        #     game.reset()
+        # Cambia la velocidad del jeugo
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_PLUS] and game.run:
+            clock_speed += 5
+
+        elif keys[pygame.K_MINUS] and game.run and clock_speed > 5:
+            clock_speed -= 5
 
     # Actualizar las entidades del juego.
     # Checa si el juego termino:
     if game.run:
-        game.spaceship_group.update()
-    #     game.move_aliens()
-    #     game.alien_lasers_group.update()
-    #     game.check_for_collisions()
+        game.spaceship.update()
+        game.move_alien()
+        game.alien_laser.update()
+        game.alien_shoot_laser()
+        game.check_for_collisions()
 
     # Dibuja las entidades.
     _ = screen.fill(GREY)
     draw_grid()
-    # Los parametros no conocidos para el borde son:
-    # La tupla es la posición del rect
-    # 2 es la anchura del borde
-    # 0 es para evitar que se rellene
-    # Los 60s son los corner radius, para que se vea redondeado.
-    # pygame.draw.rect(screen, YELLOW, (10, 10, 780, 780), 2, 0, 60, 60, 60, 60)
-    # Linea para separar la UI:
-    # La primera tupla es el punto inicial.
-    # La segunda es el punto final.
-    # 3 es el grosor de la linea.
-    # pygame.draw.line(screen, YELLOW, (20, 730), (775, 730), 3)
 
-    # TODO: CAMBIAR ESTO A LA GENERACION DEL AG
-    # Muestra el texto en la pantalla (UI)
-    # if game.run:
-    #     screen.blit(level_surface, (570, 740, 50, 50))
-    # else:
-    #     screen.blit(game_over_surface, (570, 740, 50, 50))
+    game.spaceship.draw(screen)
+    game.spaceship.sprite.laser.draw(screen)
+    game.alien.draw(screen)
+    game.alien_laser.draw(screen)
 
-    # # Sección de la UI que muestra la puntuación
-    # screen.blit(score_text_surface, (50, 15, 50, 50))
-    # formatted_score = str(game.score).zfill(5)
-    # score_surface = font.render(formatted_score, False, YELLOW)
-    # screen.blit(score_surface, (50, 40, 50, 50))
-    # screen.blit(highscore_text_surface, (600, 15, 50, 50))
-    # formatted_highscore = str(game.highscore).zfill(5)
-    # highscore_surface = font.render(formatted_highscore, False, YELLOW)
-    # screen.blit(highscore_surface, (675, 40, 50, 50))
+    pygame.display.update()
+    _ = clock.tick(clock_speed)
 
-    _ = game.spaceship_group.draw(screen)
-    game.spaceship_group.sprite.laser_group.draw(screen)
-    # game.aliens_group.draw(screen)
-    # game.alien_lasers_group.draw(screen)
-
-    pygame.display.update()  # Actualiza las entidades del juego (graficos).
-    _ = clock.tick(1)  # El juego ira a 60 fps.
+# Fuente de la UI
+# font = pygame.font.Font("game/assets/monogram.ttf", 40)
+# level_surface = font.render("LEVEL 01", False, YELLOW)
+# game_over_surface = font.render("GAME OVER", False, YELLOW)
+# # Puntuación
+# score_text_surface = font.render("SCORE", False, YELLOW)
+# highscore_text_surface = font.render("HIGH-SCORE", False, YELLOW)
