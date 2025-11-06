@@ -33,6 +33,7 @@ class Game:
         self.alien_laser = pygame.sprite.GroupSingle()
         self.run = True
         self.explosion_sound = pygame.mixer.Sound("game/assets/explosion.ogg")
+        self.cumulative_distance = 0
 
     # Se usarán 5 renglones x 11 columnas para los aliens.
     def create_alien(self):
@@ -87,7 +88,7 @@ class Game:
     def check_for_collisions(self):
         # Primero verifica si alguno de los lasers del spaceship colisiona con un alien.
         if self.spaceship.sprite.laser:
-            laser_sprite = self.spaceship.sprite.laser_group.sprite
+            laser_sprite = self.spaceship.sprite.laser.sprite
             # El tercer argumento le indica a pygame si debe destruir el elemento con el que hizo colisión.
             # Si colisiono con un alien, se borra el laser
             alien_hit = pygame.sprite.spritecollide(laser_sprite, self.alien, True)
@@ -137,3 +138,24 @@ class Game:
     # Obtiene la altura del tablero
     def get_screen_height(self):
         return self.cell_size * self.columns
+
+    # Función de adaptación: se puede definir como una medida de lo cerca que llegan los misiles del defensor al invasor.
+    def calculate_fitness_step(self):
+        if self.spaceship.sprite.laser.sprite and self.alien.sprite:
+            laser = self.spaceship.sprite.laser.sprite
+            alien = self.alien.sprite
+
+            # La adaptación es la suma del resultado de cada partida: la distancia del misil al invasor cada vez que se encuentren en la misma fila
+            # Comprueba si están en la misma fila (misma coordenada Y)
+            # Usamos una tolerancia (ej: la mitad de la altura de la celda)
+            if abs(laser.rect.centerx - alien.rect.centerx) < (self.cell_size // 2):
+                # Calcula la distancia horizontal (X)
+                distance = abs(laser.rect.centerx - alien.rect.centerx)
+
+                # "la suma del resultado de cada partida: la distancia..."
+                self.cumulative_distance += distance
+
+                # IMPORTANTE: Para evitar sumar la distancia en múltiples frames
+                # mientras cruza la fila, matamos el láser después de medir.
+                # Esto simula que "la medición se ha tomado".
+                laser.kill()

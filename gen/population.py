@@ -1,4 +1,4 @@
-from .individual import Individual
+from .individual import LEFT, RIGHT, SHOOT, Individual
 import random
 
 
@@ -8,7 +8,7 @@ class Population:
     def __init__(
         self, size_population: int, chromosome_size: int, generations: int = 50
     ):
-        self.size_population: int = size_population
+        self.size: int = size_population
         self.chromosome_size: int = chromosome_size
         # Generar una población inicial (1ejecución del programa = 50 generaciones = 50 juegos con información de la población anterior)
         self.generations: int = generations
@@ -16,7 +16,7 @@ class Population:
         self.actual_generation: int = 1
         # Asignación de los individuos de la población.
         self.individuals: list[Individual] = [
-            Individual(self.chromosome_size) for _ in range(self.size_population)
+            Individual(self.chromosome_size) for _ in range(self.size)
         ]
 
     def select_parents_by_tournament(self, tournament_size=3) -> list[Individual]:
@@ -25,7 +25,7 @@ class Population:
         Funciona para minimización (menor fitness es mejor).
         """
         selected_parents = []
-        for _ in range(self.size_population):
+        for _ in range(self.size):
             # Elige N individuos al azar para el torneo
             participants = random.sample(self.individuals, tournament_size)
 
@@ -35,15 +35,12 @@ class Population:
         return selected_parents
 
     def crossover(
-        self, parent1: Individual, parent2: Individual, crossover_rate=0.7
+        self, parent1: Individual, parent2: Individual, rate=0.7
     ) -> tuple[list[int], list[int]]:
-        """
-        Realiza un cruce de un solo punto.
-        """
         cromo1 = parent1.chromosome
         cromo2 = parent2.chromosome
 
-        if random.random() < crossover_rate:
+        if random.random() < rate:
             # Elige un punto de corte aleatorio
             cut_point = random.randint(1, self.chromosome_size - 1)
 
@@ -56,18 +53,20 @@ class Population:
             # Si no hay cruce, los hijos son clones
             return cromo1, cromo2
 
-    def mutate(self, chromosome: list[int], mutation_rate=0.01):
-        """
-        Muta un cromosoma cambiando aleatoriamente un gen (acción).
-        """
-        for i in range(len(chromosome)):
-            if random.random() < mutation_rate:
-                # Cambia la acción por una de las otras dos
-                new_action = random.randint(1, 3)
-                while (
-                    new_action == chromosome[i]
-                ):  # Asegura que sea una acción diferente
-                    new_action = random.randint(1, 3)
-                chromosome[i] = new_action
+    def mutate(self, chromosome: list[int], rate=0.01):
+        if random.random() < rate:
+            position = random.randrange(0, len(chromosome) - 1)
+            action = chromosome[position]
+
+            if action == LEFT:
+                chromosome[position] = random.choice([RIGHT, SHOOT])
+            elif action == RIGHT:
+                chromosome[position] = random.choice([LEFT, SHOOT])
+            elif action == SHOOT:
+                chromosome[position] = random.choice([RIGHT, LEFT])
+
+            print(
+                f"Se presento una mutación en la posición {position}: {action} -> {chromosome[position]}"
+            )
 
     # --- FIN AÑADIDO ---
