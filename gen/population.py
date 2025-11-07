@@ -17,8 +17,8 @@ class Population:
         size: int,
         chromosome_size: int,
         generations: int = 50,
-        mutation_rate: float = 0.01,
-        elite_percentage: float = 0.10,
+        mutation_rate: float = 0.05,
+        elite_percentage: float = 0.20,
     ):
         # Tamaño de la población.
         self.size: int = size

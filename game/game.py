@@ -230,7 +230,15 @@ class Game:
                 horizontal_distance = abs(spaceship.rect.centerx - alien.rect.centerx)
 
                 # Casillas de tolerancia: 5
-                if horizontal_distance > self.cell_size * 5:
+                if horizontal_distance > self.cell_size * 8:
                     self.fitness += 20
+
+        # Penalización por quedarse en las orillas.
+        if self.spaceship.sprite:
+            screen_center = self.get_screen_width() // 2
+            spaceship_position = self.spaceship.sprite.rect.centerx
+
+            # Penaliza distancia al centro (mantenerse cerca de zonas útiles)
+            self.fitness += abs(spaceship_position - screen_center) * 4
 
         self.steps_survived += 1
