@@ -1,103 +1,101 @@
-# TODO: PARA EL ALGORITMO GENETICO HABRA QUE REINICIAR EL JUEGO, ES DECIR SOLO TENDRA UNA VIDA
-import pygame
-import sys
-import random
+################ ALGORITMO GENÉTICO #################
 
-from game.game import Game
-from gen.individual import LEFT, RIGHT, SHOOT, Individual
-from gen.population import Population
-
-
-############### ALGORITMO GENÉTICO ***************
-# FASES DEL ALGORITMO GENÉTICO.
 # 1. Calcular la adaptación
 # 2. Seleccionar a los padres
 # 3. Crossover y mutación
 # 4. Regresa al paso 1
 
-CHROMOSOME_SIZE = 100
-POPULATION_SIZE = 25
-GENERATIONS = 50
+import pygame
+import sys
+import numpy as np
+
+from game.game import Game
+from gen.population import Population, LEFT, RIGHT, SHOOT
+from ui.manager import UIManager
+from utils import (
+    CELL_SIZE,
+    COLUMNS,
+    LIGHT_GREY,
+    ROWS,
+    load_population,
+    save_population,
+    SCREEN_HEIGHT,
+    SCREEN_WIDTH,
+    GREY,
+    POPULATION_SIZE,
+    CHROMOSOME_SIZE,
+    GENERATIONS,
+)
 
 # Población inicial (generación 0)
-population = Population(POPULATION_SIZE, CHROMOSOME_SIZE, GENERATIONS)
+population = load_population()
 
-# for individual in population.individuals:
-#     print(individual.chromosome)
+if population is None:
+    population = Population(POPULATION_SIZE, CHROMOSOME_SIZE, GENERATIONS)
 
+pygame.init()
 
-############### JUEGO ***************
-_ = pygame.init()
+font = pygame.font.Font("game/assets/monogram.ttf", 40)
+ui_manager = UIManager(font)
 
-# Colores
-GREY = (29, 29, 27)
-LIGHT_GREY = (40, 40, 36)
-# LIGHT_GREY = (255, 255, 255)
-YELLOW = (243, 216, 63)
-
-# Cuadricula del GRID
-ROWS, COLUMNS = 20, 15
-CELL_SIZE = 50
-
-# Dimensiones y configuracion de la ventana de la ventana.
-SCREEN_WIDTH = ROWS * CELL_SIZE
-SCREEN_HEIGHT = COLUMNS * CELL_SIZE
-
-# Espacio para la información del algoritmo genetico.
-GA_SCREEN_WIDTH = 500
-
-# Espacio para colocar la UI
-OFFSET = 0
 
 screen = pygame.display.set_mode(
-    # (SCREEN_WIDTH + OFFSET + GA_SCREEN_WIDTH, SCREEN_HEIGHT + 2 * OFFSET),
     (SCREEN_WIDTH, SCREEN_HEIGHT),
-    pygame.RESIZABLE,
+    # pygame.RESIZABLE,
 )
+
 pygame.display.set_caption("Proyecto Algoritmos Genéticos - Invasores del Espacio.")
 
 
 # Función para dibujar la cuadricula
 def draw_grid():
-    for x in range(0, SCREEN_WIDTH, CELL_SIZE):
+    for x in range(0, ROWS * CELL_SIZE, CELL_SIZE):
         for y in range(0, SCREEN_HEIGHT, CELL_SIZE):
             rect = pygame.Rect(x, y, CELL_SIZE, CELL_SIZE)
             _ = pygame.draw.rect(screen, LIGHT_GREY, rect, 1)
 
 
-# Sirve para controlar el tiempo de actualización del renderizado del juego.
-clock_speed = 5
+clock_speed = 10
 clock = pygame.time.Clock()
 
 
 # Instancia del nucleo del juego.
-# game = Game(SCREEN_WIDTH, SCREEN_HEIGHT, OFFSET, CELL_SIZE)
 game = Game(CELL_SIZE, ROWS, COLUMNS)
 
-# while True:  # Loop principal del juego.
 # Ciclo para cada generación.
 for generation in range(population.generations):
-    print(f"--- Iniciando Generación {generation + 1} / {population.generations} ---")
+    #     print(f"\n{'=' * 60}")
+    #     print(f"  GENERACIÓN {generation + 1} / {GENERATIONS}")
+    #     print(f"{'=' * 60}\n")
+    # Contadores de victorias y derrotas para la gráfica de esta generación
+
+    current_gen_wins = 0
+    current_gen_losses = 0
 
     # 1. Calcular la adaptación, realizar la ejecucion del juego para cada individuo.
-    for i, individual in enumerate(population.individuals):
+    for index in range(population.size):
         game.reset()  # Reinicia los elementos del juego.
 
+        # Obtención del cromosoma del individuo.
+        chromosome = population.get_chromosome(index)
+
         # Itera sobre cada uno de las acciones del cromosoma.
-        for action in individual.chromosome:
-            for event in pygame.event.get():  # Manejo de eventos.
+        for action_index, action in enumerate(chromosome):
+            # Manejo de eventos.
+            for event in pygame.event.get():
                 # Verifica si el usuario cerro la ventana.
                 if event.type == pygame.QUIT:
+                    save_population(population)
                     pygame.quit()
                     sys.exit()
 
                 # Cambia la velocidad del jeugo
                 keys = pygame.key.get_pressed()
-                if keys[pygame.K_PLUS] and game.run:
-                    clock_speed += 5
+                if keys[pygame.K_PLUS] and game.run and clock_speed < 120:
+                    clock_speed += 10
 
-                elif keys[pygame.K_MINUS] and game.run and clock_speed > 5:
-                    clock_speed -= 5
+                elif keys[pygame.K_MINUS] and game.run and clock_speed > 10:
+                    clock_speed -= 10
 
             # Actualizar las entidades del juego.
             # Checa si el juego termino: Continua con el siguiente individuo
@@ -118,63 +116,47 @@ for generation in range(population.generations):
             game.alien_laser.update()
             game.alien_shoot_laser()
 
-            # Cálculo del fitness
-            game.calculate_fitness_step()
-
+            # 🧮 Cálculo de la adaptación (fitness)
+            game.calculate_fitness_step(action)
             game.check_for_collisions()
 
             # Dibuja las entidades.
-            _ = screen.fill(GREY)
+            screen.fill(GREY)
             draw_grid()
+
+            ui_manager.draw(screen, population, generation + 1, index + 1)
+
             game.spaceship.draw(screen)
-            game.spaceship.sprite.laser.draw(screen)  # CHECAR .laser
+            game.spaceship.sprite.laser.draw(screen)
             game.alien.draw(screen)
             game.alien_laser.draw(screen)
 
             pygame.display.update()
-            _ = clock.tick(clock_speed)
+            clock.tick(clock_speed)
 
-        # Se guarda el fitness en el individuo
-        individual.fitness = game.fitness
+        # Penalizacion por timeout
+        if game.run and not game.victory:
+            game.fitness += 50_000
+            current_gen_losses += 1
 
-        # Si el alien sigue vivo, el fitness es mucho peor
-        if game.alien.sprite:
-            individual.fitness += 100_000  # "Castigo" por no matar al alien
+        # Actualizar el contador de victorias y derrotas.
+        if game.victory:
+            current_gen_wins += 1
+        elif game.defeat:
+            current_gen_losses += 1
 
-    # Ahora se busca al mejor individuo
-    best = min(population.individuals, key=lambda individual: individual.fitness)
-    print(f"Mejor fitness de la generacion (Menor): {best.fitness}")
+        population.set_fitness(index, game.fitness)
 
+    best_fitness_index = np.argmin(population.fitness)
+    best_fitness = population.fitness[best_fitness_index]
+
+    ui_manager.update_generation_stats(
+        best_fitness, current_gen_wins, current_gen_losses
+    )
     # 2. Seleccion de los padres.
-    parents = population.select_parents_by_tournament()
-
     # 3. Crossover y mutación.
-    new_generation = []
-
-    while len(new_generation) < population.size:
-        # Eleccion de los 2 padres.
-        parent1 = random.choice(parents)
-        parent2 = random.choice(parents)
-
-        # Creación de los hijos.
-        child1_chromosome, child2_chromosome = population.crossover(parent1, parent2)
-
-        # Mutacíon de los hijos.
-        population.mutate(child1_chromosome)
-        population.mutate(child2_chromosome)
-
-        # Se añaden a la generación.
-        new_generation.append(
-            Individual(population.chromosome_size).set_chromosome(child1_chromosome)
-        )
-        if len(new_generation) < population.size:
-            new_generation.append(
-                Individual(population.chromosome_size).set_chromosome(child2_chromosome)
-            )
-
-    # Reemplaza la población antigua por la nueva
-    population.individuals = new_generation
-    population.actual_generation += 1
+    population.evolve()
+    save_population(population)
 
 print("Algoritmo genético completado")
 pygame.quit()
