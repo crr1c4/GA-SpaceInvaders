@@ -2,6 +2,8 @@
 import pygame
 import random
 
+from gen.population import SHOOT
+from utils import ALIEN_BLUE, CHROMOSOME_SIZE
 from .laser import Laser
 from .spaceship import Spaceship
 from .alien import Alien
@@ -33,7 +35,17 @@ class Game:
         self.alien_laser = pygame.sprite.GroupSingle()
         self.run = True
         self.explosion_sound = pygame.mixer.Sound("game/assets/explosion.ogg")
-        self.fitness = 0
+        self.fitness: int = 0
+
+        # Variables de diagnóstico y métricas.
+        self.alignment_count = 0  # Veces alineado verticalmente
+        self.shots_fired = 0  # Total de disparos
+        self.danger_encounters = 0  # Veces en zona de peligro
+        self.steps_survived = 0  # Pasos antes de morir/ganar
+
+        # Banderas de resultado.
+        self.victory = False
+        self.defeat = False
 
     # Se usarán 5 renglones x 11 columnas para los aliens.
     def create_alien(self):
@@ -68,8 +80,12 @@ class Game:
         # Checa primero si hay aliens en la pantalla.
         if self.alien:
             # Agrega la distancia.
-            for alien in self.alien.sprites():
-                alien.rect.y += distance
+            # TODO: CAMB
+            if self.alien.sprite:
+                self.alien.sprite.rect.y += distance
+
+                if self.alien.sprite.rect.y + self.cell_size > self.get_screen_height():
+                    self.game_over()
 
     # Realiza el disparo de un alien al azar.
     def alien_shoot_laser(self):
@@ -80,7 +96,7 @@ class Game:
                 alien.rect.center,
                 -self.cell_size,
                 self.get_screen_height(),
-                (123, 124, 182),
+                ALIEN_BLUE,
             )
             self.alien_laser.add(laser_sprite)
 
@@ -94,6 +110,12 @@ class Game:
             alien_hit = pygame.sprite.spritecollide(laser_sprite, self.alien, True)
 
             if alien_hit:
+                # Se reduce el fitness si gana.
+                self.fitness -= 50_000
+                # Checa cuantos pasos dio para el derrotar al alien
+                # CHROMOSOME_SIZE esta aqui por si se cambia desde main jsjsjs.
+                self.fitness -= (CHROMOSOME_SIZE - self.steps_survived) * 5
+                self.victory = True
                 self.explosion_sound.play()
                 laser_sprite.kill()
                 # Termina el juego, solo hay un alien.
@@ -107,17 +129,21 @@ class Game:
                     self.alien_laser.sprite, self.spaceship, False
                 ):
                     self.alien_laser.sprite.kill()
-                    # Checa las vidas del spaceship.
-                    # self.lives -= 1
-
-                    # if self.lives == 0:
+                    # Castigo por derrota.
+                    self.fitness += 100_000
+                    # Castigo por morir rapido < 20%.
+                    if self.steps_survived < (CHROMOSOME_SIZE // 5):
+                        self.fitness += 20_000
+                    self.defeat = True
                     self.game_over()
 
         # Verifica si los aliens alcanzarón la nave
         if self.alien:
             for alien in self.alien:
                 if pygame.sprite.spritecollide(alien, self.spaceship, False):
-                    # TODO: Hay que checar esto, para algoritmo genetico.
+                    # Castigo por permitir que el alien aterrice.
+                    self.fitness += 100_000
+                    self.defeat = True
                     self.game_over()
 
     # Maneja el evento de game over.
@@ -135,6 +161,13 @@ class Game:
         self.fitness = 0
         self.alien_direction = random.choice([-1, 1])
 
+        self.alignment_count = 0
+        self.shots_fired = 0
+        self.danger_encounters = 0
+        self.steps_survived = 0
+        self.victory = False
+        self.defeat = False
+
     # Obtiene el ancho del tablero
     def get_screen_width(self):
         return self.cell_size * self.rows
@@ -143,38 +176,61 @@ class Game:
     def get_screen_height(self):
         return self.cell_size * self.columns
 
-    # Función de adaptación: se puede definir como una medida de lo cerca que llegan los misiles del defensor al invasor.
-    def calculate_fitness_step(self):
-        # ESTA PARTE CHECA QUE LA DISTANCIA DEL LASER AL ALIEN
-        if self.spaceship.sprite.laser.sprite and self.alien.sprite:
+    # 🧮 Función de adaptación: verifica los criterios para evaluar el fitness de una iteración del juego.
+    # Se le pasa como parametro la acción para evaluar la acción.
+    # El objetivo es minimizar, el fitness bajo es un "buen" jugador.
+    def calculate_fitness_step(self, action: int):
+        # Criterio 1. Distancia horizontal del laser al alien.
+        if self.spaceship.sprite.laser and self.alien.sprite:
+            # Obtencion de las entidades
             laser = self.spaceship.sprite.laser.sprite
             alien = self.alien.sprite
 
-            # La adaptación es la suma del resultado de cada partida: la distancia del misil al invasor cada vez que se encuentren en la misma fila
-            # Comprueba si están en la misma fila (misma coordenada Y)
-            if abs(laser.rect.centery - alien.rect.centery) < (self.cell_size // 2):
-                # Si coinciden significa que se debe sumar al fitness.
-                self.fitness += abs(laser.rect.centerx - alien.rect.centerx)
+            # Obtención de la distancia vertical
+            vertical_distance = abs(laser.rect.centery - alien.rect.centery)
 
-                # Esto simula que "la medición se ha tomado". NO ES NECESARIO SEGUIR CON LA EJECUCION DE LA ITERACION.
-                # laser.kill()
+            # Checa si estan en el mismo renglon, si es asi, saca la distancia entre columnas.
+            # Mientras menos distancia significa que mas cerca estuvo de darle.
+            if vertical_distance < (self.cell_size // 2):
+                horizontal_distance = abs(laser.rect.centerx - alien.rect.centerx)
+                self.fitness += horizontal_distance
 
-        # MIDE LA DISTANCIA DEL LASER ENEMIGO A LA SPACESHIP.
+                self.alignment_count += 1
+
+                # Bonificación por si estuvo cerca de darle.
+                if horizontal_distance < self.cell_size:
+                    self.fitness -= 10
+
+        # Criterio 2. Penalización por peligro (distancia del laser del alien a la nave).
         if self.alien_laser.sprite and self.spaceship.sprite:
-            laser_alien = self.alien_laser.sprite
+            alien_laser = self.alien_laser.sprite
             spaceship = self.spaceship.sprite
 
-            # Distancia horizontal entre la nave y el láser enemigo
-            distance_to_danger = abs(laser_alien.rect.centerx - spaceship.rect.centerx)
+            distance_to_danger = abs(alien_laser.rect.centerx - spaceship.rect.centerx)
 
-            # zona de peligro de dos celdas
-            DANGER_ZONE_RADIUS = self.cell_size * 2
+            # Si la distancia entre la nave y el laser del alien es menor a dos casillas,
+            # se tiene que penalizar...
+            if distance_to_danger < self.cell_size * 2:
+                self.fitness += (self.cell_size * 2 - distance_to_danger) * 3
+                self.danger_encounters += 1
 
-            if distance_to_danger < DANGER_ZONE_RADIUS:
-                # Si estamos en la zona de peligro, calculamos una penalización.
-                danger_penalty = DANGER_ZONE_RADIUS - distance_to_danger
+        # Penalizacion por disparo ineficiente. Esto lo agregamos para que se vayan
+        # casitigando los intentos de disparo mientras existe un laser en el espacio.
+        # Por que quita la posibilidad de moverse.
+        if action == SHOOT:
+            # Castiga el spam de disparos
+            if self.spaceship.sprite.laser:
+                self.fitness += 5
 
-                # Le damos un "peso" a esta penalización.
-                # Estar en peligro es 2 veces peor que fallar por la misma distancia.
-                DANGER_WEIGHT = 2
-                self.fitness += danger_penalty * DANGER_WEIGHT
+            # Penalización por disparar lejos del alien.
+            elif self.alien.sprite:
+                alien = self.alien.sprite
+                spaceship = self.spaceship.sprite
+
+                horizontal_distance = abs(spaceship.rect.centerx - alien.rect.centerx)
+
+                # Casillas de tolerancia: 5
+                if horizontal_distance > self.cell_size * 5:
+                    self.fitness += 20
+
+        self.steps_survived += 1
