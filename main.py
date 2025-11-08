@@ -112,6 +112,7 @@ for generation in range(population.generations):
 
             # Actualizacion de los estados de los sprites del juego
             game.spaceship.update()
+            game.spaceship.sprite.laser.update()
             game.move_alien()
             game.alien_laser.update()
             game.alien_shoot_laser()

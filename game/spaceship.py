@@ -53,9 +53,10 @@ class Spaceship(pygame.sprite.Sprite):
 
     # Actualiza el renderizado de la spaceship.
     def update(self):
+        pass
         # self.get_user_input()
         # self.constrain_movement()
-        self.laser.update()
+        # self.laser.update()
 
     # Resetea la posición del spaceship.
     def reset(self):
