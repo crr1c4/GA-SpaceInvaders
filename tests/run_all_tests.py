@@ -200,6 +200,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f" ERROR en {test_func.__name__}: {e}")
             failed_count += 1
+            
     
     print("\n--- RESUMEN DE PRUEBAS ---")
     print(f"Total de Pruebas: {len(all_tests)}")
