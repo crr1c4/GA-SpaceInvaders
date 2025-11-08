@@ -141,7 +141,7 @@ class Game:
         if self.alien:
             for alien in self.alien:
                 if pygame.sprite.spritecollide(alien, self.spaceship, False):
-                    # Castigo por permitir que el alien aterrice.
+                    # Castigo por permitir que el alien gane.
                     self.fitness += 100_000
                     self.defeat = True
                     self.game_over()
@@ -230,15 +230,18 @@ class Game:
                 horizontal_distance = abs(spaceship.rect.centerx - alien.rect.centerx)
 
                 # Casillas de tolerancia: 5
-                if horizontal_distance > self.cell_size * 8:
+                if horizontal_distance > self.cell_size * 10:
                     self.fitness += 20
 
         # Penalización por quedarse en las orillas.
-        if self.spaceship.sprite:
-            screen_center = self.get_screen_width() // 2
-            spaceship_position = self.spaceship.sprite.rect.centerx
+        # if self.spaceship.sprite:
+        #     screen_center = self.get_screen_width() // 2
+        #     spaceship_position = self.spaceship.sprite.rect.centerx
 
-            # Penaliza distancia al centro (mantenerse cerca de zonas útiles)
-            self.fitness += abs(spaceship_position - screen_center) * 4
+        #     # Penaliza distancia al centro (mantenerse cerca de zonas útiles)
+        #     self.fitness += abs(spaceship_position - screen_center) * 4
+
+        if self.steps_survived % 100 == 0 and self.steps_survived > 0:
+            self.fitness -= 10
 
         self.steps_survived += 1

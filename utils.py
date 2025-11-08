@@ -65,7 +65,7 @@ def save_population(population: Population, filepath: str = "data.npz"):
             elite_percentage=population.elite_percentage,
         )
 
-        print(f"✅ Población guardada en: {filepath}")
+        # print(f"✅ Población guardada en: {filepath}")
     except Exception as e:
         print(f"❌ Error al guardar población: {e}")
 
@@ -92,9 +92,9 @@ def load_population(filepath: str = "data.npz"):
         # Cargar los datos en la instancia
         population.population = data["population"]
         population.fitness = data["fitness"]
-        print("✅ Población cargada")
+        # print("✅ Población cargada")
         return population
 
     except Exception as e:
-        print(f"❌ Error al cargar población: {e}")
+        # print(f"❌ Error al cargar población: {e}")
         return None
